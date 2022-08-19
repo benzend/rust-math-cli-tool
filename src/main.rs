@@ -82,25 +82,7 @@ fn main() {
                 })
                 .collect::<Vec<MathsArg>>();
 
-            let mut validated = Vec::<MathsArg>::new();
-
-            for (i, item) in refactored.into_iter().enumerate() {
-                if i % 2 == 0 {
-                    // * Operators should always be at an even index
-                    match item {
-                        MathsArg::Int(_) => {}
-                        MathsArg::Op(_) => panic!("Operators are out of order"),
-                    }
-                } else {
-                    // * Integers should always be at an even index
-                    match item {
-                        MathsArg::Op(_) => {}
-                        MathsArg::Int(_) => panic!("Integers are out of order"),
-                    }
-                }
-
-                validated.push(item)
-            }
+            let validated = validate_maths_vector(refactored);
 
             // let multiplied = Vec::<MathsArg>::new();
 
@@ -191,4 +173,28 @@ fn main() {
             println!("{}", first_arg / second_arg);
         }
     }
+}
+
+fn validate_maths_vector(vector: Vec<MathsArg>) -> Vec<MathsArg> {
+    let mut validated = Vec::<MathsArg>::new();
+
+    for (i, item) in vector.into_iter().enumerate() {
+        if i % 2 == 0 {
+            // * Operators should always be at an even index
+            match item {
+                MathsArg::Int(_) => {}
+                MathsArg::Op(_) => panic!("Operators are out of order"),
+            }
+        } else {
+            // * Integers should always be at an even index
+            match item {
+                MathsArg::Op(_) => {}
+                MathsArg::Int(_) => panic!("Integers are out of order"),
+            }
+        }
+
+        validated.push(item)
+    }
+
+    validated
 }
