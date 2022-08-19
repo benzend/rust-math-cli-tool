@@ -53,6 +53,7 @@ enum Operator {
     Plus,
     Minus,
     Times,
+    Divisor,
 }
 
 fn main() {
@@ -76,6 +77,7 @@ fn main() {
                         "+" => Some(Operator::Plus),
                         "-" => Some(Operator::Minus),
                         "*" | "x" => Some(Operator::Times),
+                        "/" => Some(Operator::Divisor),
                         _ => None,
                     };
 
@@ -95,6 +97,7 @@ fn main() {
                             Operator::Plus => a + b,
                             Operator::Minus => a - b,
                             Operator::Times => a * b,
+                            Operator::Divisor => a / b,
                         },
                         _ => panic!("application failure: arg grouping wasn't done correctly"),
                     };
