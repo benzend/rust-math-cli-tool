@@ -1,9 +1,9 @@
 use clap::{Args, Parser, Subcommand};
 
-/// A fictional versioning CLI
-#[derive(Debug, Parser)] // requires `derive` feature
-#[clap(name = "hey")]
-#[clap(about = "A fictional versioning CLI", long_about = None)]
+/// A mathmatical cli
+#[derive(Debug, Parser)]
+#[clap(name = "maths")]
+#[clap(about = "A mathmatical cli", long_about = None)]
 struct Cli {
     #[clap(subcommand)]
     command: Commands,
@@ -32,29 +32,6 @@ enum Commands {
         /// second int
         second_arg: u32,
     },
-}
-
-#[derive(Debug, Args)]
-#[clap(args_conflicts_with_subcommands = true)]
-struct Stash {
-    #[clap(subcommand)]
-    command: Option<StashCommands>,
-
-    #[clap(flatten)]
-    push: StashPush,
-}
-
-#[derive(Debug, Subcommand)]
-enum StashCommands {
-    Push(StashPush),
-    Pop { stash: Option<String> },
-    Apply { stash: Option<String> },
-}
-
-#[derive(Debug, Args)]
-struct StashPush {
-    #[clap(short, long)]
-    message: Option<String>,
 }
 
 #[derive(Debug, PartialEq)]
