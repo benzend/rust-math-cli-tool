@@ -56,6 +56,11 @@ enum Operator {
     Divisor,
 }
 
+enum MathsArg {
+    Op(Operator),
+    Int(u32),
+}
+
 fn main() {
     let args = Cli::parse();
 
@@ -63,50 +68,103 @@ fn main() {
         Commands::Maths { equation } => {
             let split = equation.split(" ").collect::<Vec<&str>>();
 
-            let mut result: u32 = 0;
-            let mut group: (Option<u32>, Option<Operator>, Option<u32>) = (None, None, None);
+            let refactored = split
+                .into_iter()
+                .map(|item| match item {
+                    "+" => MathsArg::Op(Operator::Plus),
+                    "-" => MathsArg::Op(Operator::Minus),
+                    "*" | "x" => MathsArg::Op(Operator::Times),
+                    "/" => MathsArg::Op(Operator::Divisor),
+                    other => match other.parse::<u32>() {
+                        Ok(res) => MathsArg::Int(res),
+                        Err(_) => panic!("couldn't parse value in arg list"),
+                    },
+                })
+                .collect::<Vec<MathsArg>>();
 
-            for item in split.into_iter() {
-                if group.0 == None {
-                    match item.parse::<u32>() {
-                        Ok(res) => group.0 = Some(res),
-                        Err(err) => panic!("{:?}", err),
+            let mut validated = Vec::<MathsArg>::new();
+
+            for (i, item) in refactored.into_iter().enumerate() {
+                if i % 2 == 0 {
+                    // * Operators should always be at an even index
+                    match item {
+                        MathsArg::Int(_) => {}
+                        MathsArg::Op(_) => panic!("Operators are out of order"),
                     }
-                } else if group.1 == None {
-                    let operator = match item {
-                        "+" => Some(Operator::Plus),
-                        "-" => Some(Operator::Minus),
-                        "*" | "x" => Some(Operator::Times),
-                        "/" => Some(Operator::Divisor),
-                        _ => None,
-                    };
-
-                    if let Some(op) = operator {
-                        group.1 = Some(op)
-                    } else {
-                        panic!("arguments invalid: no valid operator")
+                } else {
+                    // * Integers should always be at an even index
+                    match item {
+                        MathsArg::Op(_) => {}
+                        MathsArg::Int(_) => panic!("Integers are out of order"),
                     }
-                } else if group.2 == None {
-                    match item.parse::<u32>() {
-                        Ok(res) => group.2 = Some(res),
-                        Err(err) => panic!("{:?}", err),
-                    }
-
-                    result = match group {
-                        (Some(a), Some(operator), Some(b)) => match operator {
-                            Operator::Plus => a + b,
-                            Operator::Minus => a - b,
-                            Operator::Times => a * b,
-                            Operator::Divisor => a / b,
-                        },
-                        _ => panic!("application failure: arg grouping wasn't done correctly"),
-                    };
-
-                    group = (Some(result), None, None)
                 }
+
+                validated.push(item)
             }
 
-            println!("Result: {}", result);
+            // let multiplied = Vec::<MathsArg>::new();
+
+            // let mut before: Option<MathsArg> = None;
+            // let mut middle: Option<MathsArg> = None;
+            // for current in refactored.into_iter() {
+            //     match (&before, &middle) {
+            //         (Some(b), Some(m)) => match (b, m, &current) {
+            //             (MathsArg::Int(b), MathsArg::Op(Operator::Times), MathsArg::Int(m)) => {
+            //                 MathsArg::Int(b * m);
+            //             }
+            //             _ => {}
+            //         },
+            //         _ => {}
+            //     }
+
+            //     before = middle;
+            //     middle = Some(current);
+            // }
+
+            // let mut result: u32 = 0;
+            // let mut group: (Option<u32>, Option<Operator>, Option<u32>) = (None, None, None);
+
+            // for item in split.into_iter() {
+            //     if group.0 == None {
+            //         match item.parse::<u32>() {
+            //             Ok(res) => group.0 = Some(res),
+            //             Err(err) => panic!("{:?}", err),
+            //         }
+            //     } else if group.1 == None {
+            //         let operator = match item {
+            //             "+" => Some(Operator::Plus),
+            //             "-" => Some(Operator::Minus),
+            //             "*" | "x" => Some(Operator::Times),
+            //             "/" => Some(Operator::Divisor),
+            //             _ => None,
+            //         };
+
+            //         if let Some(op) = operator {
+            //             group.1 = Some(op)
+            //         } else {
+            //             panic!("arguments invalid: no valid operator")
+            //         }
+            //     } else if group.2 == None {
+            //         match item.parse::<u32>() {
+            //             Ok(res) => group.2 = Some(res),
+            //             Err(err) => panic!("{:?}", err),
+            //         }
+
+            //         result = match group {
+            //             (Some(a), Some(operator), Some(b)) => match operator {
+            //                 Operator::Plus => a + b,
+            //                 Operator::Minus => a - b,
+            //                 Operator::Times => a * b,
+            //                 Operator::Divisor => a / b,
+            //             },
+            //             _ => panic!("application failure: arg grouping wasn't done correctly"),
+            //         };
+
+            //         group = (Some(result), None, None)
+            //     }
+            // }
+
+            // println!("Result: {}", result);
         }
         Commands::Add {
             first_arg,
