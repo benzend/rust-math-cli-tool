@@ -38,6 +38,7 @@ enum Commands {
 enum Operator {
     Plus,
     Minus,
+    Times,
 }
 
 fn main() {
@@ -60,6 +61,7 @@ fn main() {
                     let operator = match item {
                         "+" => Some(Operator::Plus),
                         "-" => Some(Operator::Minus),
+                        "*" | "x" => Some(Operator::Times),
                         _ => None,
                     };
 
@@ -78,6 +80,7 @@ fn main() {
                         (Some(a), Some(operator), Some(b)) => match operator {
                             Operator::Plus => a + b,
                             Operator::Minus => a - b,
+                            Operator::Times => a * b,
                         },
                         _ => panic!("application failure: arg grouping wasn't done correctly"),
                     };
