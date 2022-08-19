@@ -1,4 +1,4 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 
 /// A mathmatical cli
 #[derive(Debug, Parser)]
