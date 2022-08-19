@@ -1,0 +1,131 @@
+use clap::{Args, Parser, Subcommand};
+
+/// A fictional versioning CLI
+#[derive(Debug, Parser)] // requires `derive` feature
+#[clap(name = "hey")]
+#[clap(about = "A fictional versioning CLI", long_about = None)]
+struct Cli {
+    #[clap(subcommand)]
+    command: Commands,
+}
+
+#[derive(Debug, Subcommand)]
+enum Commands {
+    /// Do math as a string
+    #[clap(arg_required_else_help = true)]
+    Maths {
+        /// A mathmatical equation string
+        equation: String,
+    },
+    /// Add
+    #[clap(arg_required_else_help = true)]
+    Add {
+        /// first int
+        first_arg: u32,
+        /// second int
+        second_arg: u32,
+    },
+    #[clap(arg_required_else_help = true)]
+    Subtract {
+        /// first int
+        first_arg: u32,
+        /// second int
+        second_arg: u32,
+    },
+}
+
+#[derive(Debug, Args)]
+#[clap(args_conflicts_with_subcommands = true)]
+struct Stash {
+    #[clap(subcommand)]
+    command: Option<StashCommands>,
+
+    #[clap(flatten)]
+    push: StashPush,
+}
+
+#[derive(Debug, Subcommand)]
+enum StashCommands {
+    Push(StashPush),
+    Pop { stash: Option<String> },
+    Apply { stash: Option<String> },
+}
+
+#[derive(Debug, Args)]
+struct StashPush {
+    #[clap(short, long)]
+    message: Option<String>,
+}
+
+#[derive(Debug, PartialEq)]
+enum Operator {
+    Plus,
+    Minus,
+}
+
+fn main() {
+    let args = Cli::parse();
+
+    match args.command {
+        Commands::Maths { equation } => {
+            let split = equation.split(" ").collect::<Vec<&str>>();
+
+            println!("{:?}", &split);
+
+            let mut result: u32 = 0;
+            let mut group: (Option<u32>, Option<Operator>, Option<u32>) = (None, None, None);
+
+            for item in split.into_iter() {
+                if group.0 == None {
+                    match item.parse::<u32>() {
+                        Ok(res) => group.0 = Some(res),
+                        Err(err) => panic!("{:?}", err),
+                    }
+                } else if group.1 == None {
+                    let operator = match item {
+                        "+" => Some(Operator::Plus),
+                        "-" => Some(Operator::Minus),
+                        _ => None,
+                    };
+
+                    if let Some(op) = operator {
+                        group.1 = Some(op)
+                    } else {
+                        panic!("arguments invalid: no valid operator")
+                    }
+                } else if group.2 == None {
+                    match item.parse::<u32>() {
+                        Ok(res) => group.2 = Some(res),
+                        Err(err) => panic!("{:?}", err),
+                    }
+
+                    result = match group {
+                        (Some(a), Some(operator), Some(b)) => match operator {
+                            Operator::Plus => a + b,
+                            Operator::Minus => a - b,
+                        },
+                        _ => panic!("not enough valid arguments, application failure"),
+                    };
+
+                    group = (Some(result), None, None)
+                }
+            }
+
+            println!("Result: {}", result);
+        }
+        Commands::Add {
+            first_arg,
+            second_arg,
+        } => {
+            println!("{}", first_arg + second_arg);
+        }
+        Commands::Subtract {
+            first_arg,
+            second_arg,
+        } => {
+            println!("{}", first_arg - second_arg);
+        }
+    }
+
+    // Continued program logic goes here...
+}
