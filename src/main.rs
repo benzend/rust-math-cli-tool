@@ -101,6 +101,4 @@ fn main() {
             println!("{}", first_arg - second_arg);
         }
     }
-
-    // Continued program logic goes here...
 }
