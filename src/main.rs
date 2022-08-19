@@ -68,21 +68,7 @@ fn main() {
         Commands::Maths { equation } => {
             let split = equation.split(" ").collect::<Vec<&str>>();
 
-            let refactored = split
-                .into_iter()
-                .map(|item| match item {
-                    "+" => MathsArg::Op(Operator::Plus),
-                    "-" => MathsArg::Op(Operator::Minus),
-                    "*" | "x" => MathsArg::Op(Operator::Times),
-                    "/" => MathsArg::Op(Operator::Divisor),
-                    other => match other.parse::<u32>() {
-                        Ok(res) => MathsArg::Int(res),
-                        Err(_) => panic!("couldn't parse value in arg list"),
-                    },
-                })
-                .collect::<Vec<MathsArg>>();
-
-            let validated = validate_maths_vector(refactored);
+            let validated = validate_maths_vector(parse_maths_vector(split));
 
             // let multiplied = Vec::<MathsArg>::new();
 
@@ -173,6 +159,22 @@ fn main() {
             println!("{}", first_arg / second_arg);
         }
     }
+}
+
+fn parse_maths_vector(vector: Vec<&str>) -> Vec<MathsArg> {
+    vector
+        .into_iter()
+        .map(|item| match item {
+            "+" => MathsArg::Op(Operator::Plus),
+            "-" => MathsArg::Op(Operator::Minus),
+            "*" | "x" => MathsArg::Op(Operator::Times),
+            "/" => MathsArg::Op(Operator::Divisor),
+            other => match other.parse::<u32>() {
+                Ok(res) => MathsArg::Int(res),
+                Err(_) => panic!("couldn't parse value in arg list"),
+            },
+        })
+        .collect::<Vec<MathsArg>>()
 }
 
 fn validate_maths_vector(vector: Vec<MathsArg>) -> Vec<MathsArg> {
