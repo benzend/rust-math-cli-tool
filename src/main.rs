@@ -32,12 +32,20 @@ enum Commands {
         /// second int
         second_arg: u32,
     },
+    #[clap(arg_required_else_help = true)]
+    Multiply {
+        /// first int
+        first_arg: u32,
+        /// second int
+        second_arg: u32,
+    },
 }
 
 #[derive(Debug, PartialEq)]
 enum Operator {
     Plus,
     Minus,
+    Times,
 }
 
 fn main() {
@@ -60,6 +68,7 @@ fn main() {
                     let operator = match item {
                         "+" => Some(Operator::Plus),
                         "-" => Some(Operator::Minus),
+                        "*" | "x" => Some(Operator::Times),
                         _ => None,
                     };
 
@@ -78,6 +87,7 @@ fn main() {
                         (Some(a), Some(operator), Some(b)) => match operator {
                             Operator::Plus => a + b,
                             Operator::Minus => a - b,
+                            Operator::Times => a * b,
                         },
                         _ => panic!("application failure: arg grouping wasn't done correctly"),
                     };
@@ -99,6 +109,12 @@ fn main() {
             second_arg,
         } => {
             println!("{}", first_arg - second_arg);
+        }
+        Commands::Multiply {
+            first_arg,
+            second_arg,
+        } => {
+            println!("{}", first_arg * second_arg);
         }
     }
 }
