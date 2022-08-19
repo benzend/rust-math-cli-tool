@@ -39,6 +39,13 @@ enum Commands {
         /// second int
         second_arg: u32,
     },
+    #[clap(arg_required_else_help = true)]
+    Divide {
+        /// first int
+        first_arg: u32,
+        /// second int
+        second_arg: u32,
+    },
 }
 
 #[derive(Debug, PartialEq)]
@@ -115,6 +122,12 @@ fn main() {
             second_arg,
         } => {
             println!("{}", first_arg * second_arg);
+        }
+        Commands::Divide {
+            first_arg,
+            second_arg,
+        } => {
+            println!("{}", first_arg / second_arg);
         }
     }
 }
