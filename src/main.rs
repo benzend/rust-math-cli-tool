@@ -47,8 +47,6 @@ fn main() {
         Commands::Maths { equation } => {
             let split = equation.split(" ").collect::<Vec<&str>>();
 
-            println!("{:?}", &split);
-
             let mut result: u32 = 0;
             let mut group: (Option<u32>, Option<Operator>, Option<u32>) = (None, None, None);
 
@@ -81,7 +79,7 @@ fn main() {
                             Operator::Plus => a + b,
                             Operator::Minus => a - b,
                         },
-                        _ => panic!("not enough valid arguments, application failure"),
+                        _ => panic!("application failure: arg grouping wasn't done correctly"),
                     };
 
                     group = (Some(result), None, None)
