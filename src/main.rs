@@ -39,6 +39,13 @@ enum Commands {
         /// second int
         second_arg: u32,
     },
+    #[clap(arg_required_else_help = true)]
+    Divide {
+        /// first int
+        first_arg: u32,
+        /// second int
+        second_arg: u32,
+    },
 }
 
 #[derive(Debug, PartialEq)]
@@ -46,6 +53,7 @@ enum Operator {
     Plus,
     Minus,
     Times,
+    Divisor,
 }
 
 fn main() {
@@ -69,6 +77,7 @@ fn main() {
                         "+" => Some(Operator::Plus),
                         "-" => Some(Operator::Minus),
                         "*" | "x" => Some(Operator::Times),
+                        "/" => Some(Operator::Divisor),
                         _ => None,
                     };
 
@@ -88,6 +97,7 @@ fn main() {
                             Operator::Plus => a + b,
                             Operator::Minus => a - b,
                             Operator::Times => a * b,
+                            Operator::Divisor => a / b,
                         },
                         _ => panic!("application failure: arg grouping wasn't done correctly"),
                     };
@@ -115,6 +125,12 @@ fn main() {
             second_arg,
         } => {
             println!("{}", first_arg * second_arg);
+        }
+        Commands::Divide {
+            first_arg,
+            second_arg,
+        } => {
+            println!("{}", first_arg / second_arg);
         }
     }
 }
