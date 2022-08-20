@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use std::cmp::Ordering;
 
 /// A mathmatical cli
 #[derive(Debug, Parser)]
@@ -56,6 +57,7 @@ enum Operator {
     Divisor,
 }
 
+#[derive(Debug, PartialEq)]
 enum MathsArg {
     Op(Operator),
     Int(u32),
@@ -70,24 +72,60 @@ fn main() {
 
             let validated = validate_maths_vector(parse_maths_vector(split));
 
-            // let multiplied = Vec::<MathsArg>::new();
+            let mut multiplied = Vec::<MathsArg>::new();
 
-            // let mut before: Option<MathsArg> = None;
-            // let mut middle: Option<MathsArg> = None;
-            // for current in refactored.into_iter() {
-            //     match (&before, &middle) {
-            //         (Some(b), Some(m)) => match (b, m, &current) {
-            //             (MathsArg::Int(b), MathsArg::Op(Operator::Times), MathsArg::Int(m)) => {
-            //                 MathsArg::Int(b * m);
-            //             }
-            //             _ => {}
-            //         },
-            //         _ => {}
-            //     }
+            let mut before: Option<MathsArg> = None;
+            let mut middle: Option<MathsArg> = None;
+            let mut new_arg_created = false;
+            for current in validated.into_iter() {
+                let new_arg = match (&before, &middle) {
+                    // * When we have a full "block" e.g. x + y, start
+                    // * check for multiplication
+                    (Some(b), Some(m)) => match (b, m, &current) {
+                        (MathsArg::Int(b), MathsArg::Op(Operator::Times), MathsArg::Int(c)) => {
+                            let res = *b * *c;
+                            new_arg_created = true;
+                            multiplied.push(MathsArg::Int(res));
+                            MathsArg::Int(res)
+                        }
+                        (MathsArg::Int(b), MathsArg::Op(Operator::Divisor), MathsArg::Int(c)) => {
+                            let res = *b / *c;
+                            new_arg_created = true;
+                            multiplied.push(MathsArg::Int(res));
+                            MathsArg::Int(res)
+                        }
+                        (MathsArg::Int(b), MathsArg::Op(Operator::Plus), MathsArg::Int(c)) => {
+                            if !new_arg_created {
+                                multiplied.push(MathsArg::Int(*b));
+                            }
+                            new_arg_created = false;
+                            multiplied.push(MathsArg::Op(Operator::Plus));
+                            MathsArg::Int(*c)
+                        }
+                        (MathsArg::Int(b), MathsArg::Op(Operator::Minus), MathsArg::Int(c)) => {
+                            if !new_arg_created {
+                                multiplied.push(MathsArg::Int(*b));
+                            }
+                            new_arg_created = false;
+                            multiplied.push(MathsArg::Op(Operator::Minus));
+                            MathsArg::Int(*c)
+                        }
+                        (_, _, MathsArg::Int(c)) => MathsArg::Int(*c),
+                        (_, _, MathsArg::Op(op)) => match op {
+                            Operator::Minus => MathsArg::Op(Operator::Minus),
+                            Operator::Plus => MathsArg::Op(Operator::Plus),
+                            Operator::Times => MathsArg::Op(Operator::Times),
+                            Operator::Divisor => MathsArg::Op(Operator::Divisor),
+                        },
+                    },
+                    _ => current,
+                };
 
-            //     before = middle;
-            //     middle = Some(current);
-            // }
+                before = middle;
+                middle = Some(new_arg);
+            }
+
+            println!("{:?}", multiplied);
 
             // let mut result: u32 = 0;
             // let mut group: (Option<u32>, Option<Operator>, Option<u32>) = (None, None, None);
