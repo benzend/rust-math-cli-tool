@@ -72,60 +72,53 @@ fn main() {
 
             let validated = validate_maths_vector(parse_maths_vector(split));
 
-            let mut multiplied = Vec::<MathsArg>::new();
+            let mut result: u32;
 
-            let mut before: Option<MathsArg> = None;
-            let mut middle: Option<MathsArg> = None;
-            let mut new_arg_created = false;
-            for current in validated.into_iter() {
-                let new_arg = match (&before, &middle) {
-                    // * When we have a full "block" e.g. x + y, start
-                    // * check for multiplication
-                    (Some(b), Some(m)) => match (b, m, &current) {
-                        (MathsArg::Int(b), MathsArg::Op(Operator::Times), MathsArg::Int(c)) => {
-                            let res = *b * *c;
-                            new_arg_created = true;
-                            multiplied.push(MathsArg::Int(res));
-                            MathsArg::Int(res)
-                        }
-                        (MathsArg::Int(b), MathsArg::Op(Operator::Divisor), MathsArg::Int(c)) => {
-                            let res = *b / *c;
-                            new_arg_created = true;
-                            multiplied.push(MathsArg::Int(res));
-                            MathsArg::Int(res)
-                        }
-                        (MathsArg::Int(b), MathsArg::Op(Operator::Plus), MathsArg::Int(c)) => {
-                            if !new_arg_created {
-                                multiplied.push(MathsArg::Int(*b));
-                            }
-                            new_arg_created = false;
-                            multiplied.push(MathsArg::Op(Operator::Plus));
-                            MathsArg::Int(*c)
-                        }
-                        (MathsArg::Int(b), MathsArg::Op(Operator::Minus), MathsArg::Int(c)) => {
-                            if !new_arg_created {
-                                multiplied.push(MathsArg::Int(*b));
-                            }
-                            new_arg_created = false;
-                            multiplied.push(MathsArg::Op(Operator::Minus));
-                            MathsArg::Int(*c)
-                        }
-                        (_, _, MathsArg::Int(c)) => MathsArg::Int(*c),
-                        (_, _, MathsArg::Op(op)) => match op {
-                            Operator::Minus => MathsArg::Op(Operator::Minus),
-                            Operator::Plus => MathsArg::Op(Operator::Plus),
-                            Operator::Times => MathsArg::Op(Operator::Times),
-                            Operator::Divisor => MathsArg::Op(Operator::Divisor),
-                        },
+            result = if validated.len() == 3 as usize {
+                match (&validated[0], &validated[1], &validated[2]) {
+                    (MathsArg::Int(a), MathsArg::Op(op), MathsArg::Int(b)) => match op {
+                        Operator::Times => a * b,
+                        Operator::Divisor => a / b,
+                        Operator::Minus => a - b,
+                        Operator::Plus => a + b,
                     },
-                    _ => current,
-                };
+                    _ => panic!("Not a valid string"),
+                }
+            } else {
+                let mut arr = Vec::<&MathsArg>::new();
+                let mut first_arg = None;
+                let mut second_arg = None;
 
-                before = middle;
-                middle = Some(new_arg);
-            }
+                for third_arg in validated.into_iter() {
+                    let valid_group = match (first_arg, &second_arg, &third_arg) {
+                        (Some(MathsArg::Int(a)), Some(MathsArg::Op(op)), MathsArg::Int(b)) => {
+                            Some((a, op, b))
+                        }
+                        _ => None,
+                    };
 
-            println!("{:?}", multiplied);
+                    let mut new_third_arg = None;
+
+                    if let Some(group) = valid_group {
+                        new_third_arg = match group.1 {
+                            Operator::Times => Some(MathsArg::Int(group.0 * group.2)),
+                            _ => None,
+                        }
+                    }
+
+                    first_arg = second_arg;
+
+                    second_arg = if let Some(new_third_arg) = new_third_arg {
+                        Some(new_third_arg)
+                    } else {
+                        Some(third_arg)
+                    }
+                }
+
+                print!("{:?}", arr);
+
+                3
+            };
 
             // let mut result: u32 = 0;
             // let mut group: (Option<u32>, Option<Operator>, Option<u32>) = (None, None, None);
@@ -170,7 +163,7 @@ fn main() {
             //     }
             // }
 
-            // println!("Result: {}", result);
+            println!("Result: {}", result);
         }
         Commands::Add {
             first_arg,
@@ -234,6 +227,10 @@ fn validate_maths_vector(vector: Vec<MathsArg>) -> Vec<MathsArg> {
         }
 
         validated.push(item)
+    }
+
+    if validated.len() % 2 == 0 {
+        panic!("Even number of arguments")
     }
 
     validated
