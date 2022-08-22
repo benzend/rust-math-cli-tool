@@ -85,87 +85,8 @@ fn main() {
                     _ => panic!("Not a valid string"),
                 }
             } else {
-                let mut arr = Vec::<MathsArg>::new();
-                let mut first_arg = None;
-                let mut second_arg = None;
-
-                let validated_len = validated.len();
-
-                let mut was_mulitplied = false;
-                for (i, third_arg) in validated.into_iter().enumerate() {
-                    let new_arg = match (&first_arg, &second_arg, &third_arg) {
-                        (Some(MathsArg::Int(a)), Some(MathsArg::Op(op)), MathsArg::Int(b)) => {
-                            match op {
-                                Operator::Times => {
-                                    if i == 2 {
-                                        // arr.push(MathsArg::Int(a * b));
-                                        was_mulitplied = true;
-                                        Some(MathsArg::Int(a * b))
-                                    } else if validated_len - 1 == i {
-                                        arr.push(MathsArg::Int(a * b));
-                                        None
-                                    } else {
-                                        was_mulitplied = true;
-                                        Some(MathsArg::Int(a * b))
-                                    }
-                                }
-                                Operator::Divisor => {
-                                    if i == 2 || was_mulitplied || validated_len - 1 == i {
-                                        arr.push(MathsArg::Int(*a));
-                                        arr.push(MathsArg::Op(Operator::Divisor));
-                                        arr.push(MathsArg::Int(*b));
-                                    } else if validated_len - 3 == i {
-                                        arr.push(MathsArg::Op(Operator::Divisor));
-                                    } else {
-                                        arr.push(MathsArg::Op(Operator::Divisor));
-                                        arr.push(MathsArg::Int(*b));
-                                    }
-                                    was_mulitplied = false;
-                                    None
-                                }
-                                Operator::Plus => {
-                                    if i == 2 || was_mulitplied || validated_len - 1 == i {
-                                        arr.push(MathsArg::Int(*a));
-                                        arr.push(MathsArg::Op(Operator::Plus));
-                                        arr.push(MathsArg::Int(*b));
-                                    } else if validated_len - 3 == i {
-                                        arr.push(MathsArg::Op(Operator::Plus));
-                                    } else {
-                                        arr.push(MathsArg::Op(Operator::Plus));
-                                        arr.push(MathsArg::Int(*b));
-                                    }
-                                    was_mulitplied = false;
-                                    None
-                                }
-                                Operator::Minus => {
-                                    if i == 2 || was_mulitplied || validated_len - 1 == i {
-                                        arr.push(MathsArg::Int(*a));
-                                        arr.push(MathsArg::Op(Operator::Minus));
-                                        arr.push(MathsArg::Int(*b));
-                                    } else if validated_len - 3 == i {
-                                        arr.push(MathsArg::Op(Operator::Minus));
-                                    } else {
-                                        arr.push(MathsArg::Op(Operator::Minus));
-                                        arr.push(MathsArg::Int(*b));
-                                    }
-                                    was_mulitplied = false;
-                                    None
-                                }
-                            }
-                        }
-                        _ => None,
-                    };
-
-                    first_arg = second_arg;
-
-                    if let Some(new_arg) = new_arg {
-                        second_arg = Some(new_arg)
-                    } else {
-                        second_arg = Some(third_arg)
-                    }
-                }
-
-                print!("{:?}", arr);
+                let multiplied = multipy_maths_vector(validated);
+                print!("{:?}", multiplied);
 
                 3
             };
@@ -284,4 +205,88 @@ fn validate_maths_vector(vector: Vec<MathsArg>) -> Vec<MathsArg> {
     }
 
     validated
+}
+
+fn multipy_maths_vector(vector: Vec<MathsArg>) -> Vec<MathsArg> {
+    let mut new_vector = Vec::<MathsArg>::new();
+    let mut first_arg = None;
+    let mut second_arg = None;
+
+    let validated_len = vector.len();
+
+    let mut was_mulitplied = false;
+    for (i, third_arg) in vector.into_iter().enumerate() {
+        let new_arg = match (&first_arg, &second_arg, &third_arg) {
+            (Some(MathsArg::Int(a)), Some(MathsArg::Op(op)), MathsArg::Int(b)) => {
+                match op {
+                    Operator::Times => {
+                        if i == 2 {
+                            // new_vector.push(MathsArg::Int(a * b));
+                            was_mulitplied = true;
+                            Some(MathsArg::Int(a * b))
+                        } else if validated_len - 1 == i {
+                            new_vector.push(MathsArg::Int(a * b));
+                            None
+                        } else {
+                            was_mulitplied = true;
+                            Some(MathsArg::Int(a * b))
+                        }
+                    }
+                    Operator::Divisor => {
+                        if i == 2 || was_mulitplied || validated_len - 1 == i {
+                            new_vector.push(MathsArg::Int(*a));
+                            new_vector.push(MathsArg::Op(Operator::Divisor));
+                            new_vector.push(MathsArg::Int(*b));
+                        } else if validated_len - 3 == i {
+                            new_vector.push(MathsArg::Op(Operator::Divisor));
+                        } else {
+                            new_vector.push(MathsArg::Op(Operator::Divisor));
+                            new_vector.push(MathsArg::Int(*b));
+                        }
+                        was_mulitplied = false;
+                        None
+                    }
+                    Operator::Plus => {
+                        if i == 2 || was_mulitplied || validated_len - 1 == i {
+                            new_vector.push(MathsArg::Int(*a));
+                            new_vector.push(MathsArg::Op(Operator::Plus));
+                            new_vector.push(MathsArg::Int(*b));
+                        } else if validated_len - 3 == i {
+                            new_vector.push(MathsArg::Op(Operator::Plus));
+                        } else {
+                            new_vector.push(MathsArg::Op(Operator::Plus));
+                            new_vector.push(MathsArg::Int(*b));
+                        }
+                        was_mulitplied = false;
+                        None
+                    }
+                    Operator::Minus => {
+                        if i == 2 || was_mulitplied || validated_len - 1 == i {
+                            new_vector.push(MathsArg::Int(*a));
+                            new_vector.push(MathsArg::Op(Operator::Minus));
+                            new_vector.push(MathsArg::Int(*b));
+                        } else if validated_len - 3 == i {
+                            new_vector.push(MathsArg::Op(Operator::Minus));
+                        } else {
+                            new_vector.push(MathsArg::Op(Operator::Minus));
+                            new_vector.push(MathsArg::Int(*b));
+                        }
+                        was_mulitplied = false;
+                        None
+                    }
+                }
+            }
+            _ => None,
+        };
+
+        first_arg = second_arg;
+
+        if let Some(new_arg) = new_arg {
+            second_arg = Some(new_arg)
+        } else {
+            second_arg = Some(third_arg)
+        }
+    }
+
+    new_vector
 }
