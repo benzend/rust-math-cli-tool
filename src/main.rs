@@ -1,5 +1,4 @@
 use clap::{Parser, Subcommand};
-use std::cmp::Ordering;
 
 /// A mathmatical cli
 #[derive(Debug, Parser)]
@@ -197,12 +196,8 @@ fn parse_maths_equation(equation: String) -> i32 {
     result
 }
 
-fn solve(arr: Vec<MathsArg>) -> i32 {
-    1
-}
 mod tests {
     mod maths {
-        use crate::{parse_maths_equation, MathsArg, MathsExpectation, Operator};
 
         #[test]
         fn handles_any_operator_with_two_args() {
@@ -237,6 +232,13 @@ mod tests {
 
         #[test]
         fn handles_order_of_ops() {
+            use crate::parse_maths_equation;
+
+            struct MathsExpectation {
+                input: String,
+                output: i32,
+            }
+
             let tests = vec![
                 MathsExpectation {
                     input: "3 * 3".to_string(),
@@ -253,9 +255,4 @@ mod tests {
             })
         }
     }
-}
-
-struct MathsExpectation {
-    input: String,
-    output: i32,
 }
