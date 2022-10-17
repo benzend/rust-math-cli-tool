@@ -146,9 +146,7 @@ fn parse_maths_equation(equation: String) -> i32 {
 
     let validated = validate_maths_vector(parse_maths_vector(split));
 
-    let mut result: i32;
-
-    result = if validated.len() == 3 as usize {
+    let result = if validated.len() == 3 {
         match (&validated[0], &validated[1], &validated[2]) {
             (MathsArg::Int(a), MathsArg::Op(op), MathsArg::Int(b)) => match op {
                 Operator::Times => a * b,
@@ -159,8 +157,6 @@ fn parse_maths_equation(equation: String) -> i32 {
             _ => panic!("Not a valid string"),
         }
     } else {
-        for arg in validated.into_iter() {}
-
         9
     };
 
