@@ -14,3 +14,8 @@ A simple math CLI built with Rust.
 
 https://user-images.githubusercontent.com/70179217/185538684-baab2fa3-2278-4505-b91e-e788a19489f8.mov
 
+## Development
+
+### Testing
+
+Run `cargo test` to run tests.
