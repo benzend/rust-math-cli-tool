@@ -156,8 +156,42 @@ fn parse_maths_equation(equation: String) -> i32 {
             },
             _ => panic!("Not a valid string"),
         }
+    } else if validated.len() == 5 {
+        match (
+            &validated[0],
+            &validated[1],
+            &validated[2],
+            &validated[3],
+            &validated[4],
+        ) {
+            (
+                MathsArg::Int(a),
+                MathsArg::Op(op_a),
+                MathsArg::Int(b),
+                MathsArg::Op(op_b),
+                MathsArg::Int(c),
+            ) => match (op_a, op_b) {
+                (Operator::Times, Operator::Times) => a * b * c,
+                (Operator::Times, Operator::Divisor) => a * b / c,
+                (Operator::Times, Operator::Plus) => (a * b) + c,
+                (Operator::Times, Operator::Minus) => (a * b) - c,
+                (Operator::Divisor, Operator::Times) => a / b * c,
+                (Operator::Divisor, Operator::Divisor) => a / b / c,
+                (Operator::Divisor, Operator::Plus) => (a / b) + c,
+                (Operator::Divisor, Operator::Minus) => (a / b) - c,
+                (Operator::Plus, Operator::Times) => a + (b * c),
+                (Operator::Plus, Operator::Divisor) => a + (b / c),
+                (Operator::Plus, Operator::Plus) => a + b + c,
+                (Operator::Plus, Operator::Minus) => a + b - c,
+                (Operator::Minus, Operator::Times) => a - (b * c),
+                (Operator::Minus, Operator::Divisor) => a - (b / c),
+                (Operator::Minus, Operator::Plus) => a - b + c,
+                (Operator::Minus, Operator::Minus) => a - b - c,
+            },
+            _ => panic!("Not a valid string!"),
+        }
     } else {
-        9
+        1
     };
 
     result
