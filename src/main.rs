@@ -239,6 +239,7 @@ fn parse_maths_equation(equation: String) -> i32 {
         }
     } else {
         let mut chained: Vec<Chain> = Vec::new();
+        let mut prev_op: Option<Operator> = None;
         let mut arg_1: Option<&MathsArg> = None;
 
         for (validated_index, arg) in validated.iter().enumerate() {
@@ -260,9 +261,19 @@ fn parse_maths_equation(equation: String) -> i32 {
                                 (Operator::Divisor, Operator::Divisor) => {
                                     chained[chained_len - 1].push(prev_arg);
                                 }
-                                (Operator::Times, op) => {
-                                    chained.push(Chain::new(Operator::from(op), Some(vec![*prev])));
-                                }
+                                (Operator::Times, op) => match prev_op {
+                                    Some(Operator::Plus)
+                                    | Some(Operator::Divisor)
+                                    | Some(Operator::Minus) => {
+                                        chained.push(Chain::new(
+                                            Operator::from(op),
+                                            Some(vec![*prev]),
+                                        ));
+                                    }
+                                    _ => {
+                                        chained[chained_len - 1].push(prev_arg);
+                                    }
+                                },
                                 (Operator::Plus, op) => {
                                     chained.push(Chain::new(Operator::from(op), Some(vec![*prev])));
                                 }
@@ -291,10 +302,19 @@ fn parse_maths_equation(equation: String) -> i32 {
                             }
                         }
                     }
-                    (_, MathsArg::Int(x)) => {
+                    (MathsArg::Op(op), MathsArg::Int(x)) => {
                         if validated_index == &validated.len() - 1 {
                             let chained_len = &chained.len();
-                            chained[chained_len - 1].push(*x);
+                            match prev_op {
+                                Some(Operator::Plus)
+                                | Some(Operator::Divisor)
+                                | Some(Operator::Minus) => {
+                                    chained.push(Chain::new(Operator::from(op), Some(vec![*x])));
+                                }
+                                _ => {
+                                    chained[chained_len - 1].push(*x);
+                                }
+                            }
                         }
                     }
 
@@ -302,6 +322,12 @@ fn parse_maths_equation(equation: String) -> i32 {
                 }
             };
 
+            match &arg {
+                MathsArg::Op(op) => {
+                    prev_op = Some(Operator::from(op));
+                }
+                _ => {}
+            }
             arg_1 = Some(&arg);
         }
 
