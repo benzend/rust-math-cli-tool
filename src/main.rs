@@ -77,17 +77,18 @@ enum MathsArg {
 struct Chain {
     op: Operator,
     nums: Vec<i32>,
+    prepend: Option<Operator>,
 }
 
 impl Chain {
-    fn new(op: Operator, init: Option<Vec<i32>>) -> Chain {
+    fn new(op: Operator, init: Option<Vec<i32>>, prepend: Option<Operator>) -> Chain {
         let nums = if let Some(init) = init {
             init
         } else {
             Vec::new()
         };
 
-        Chain { op, nums }
+        Chain { op, nums, prepend }
     }
 }
 
@@ -263,15 +264,27 @@ fn parse_maths_equation(equation: String) -> i32 {
                                 }
                                 // * Handle 4 + 3 * 2 * 1
                                 (Operator::Plus, Operator::Times, Some(Operator::Plus)) => {
-                                    chained.push(Chain::new(Operator::Times, Some(vec![*prev])));
+                                    chained.push(Chain::new(
+                                        Operator::Times,
+                                        Some(vec![*prev]),
+                                        None,
+                                    ));
                                 }
                                 // * Handle 4 - 3 * 2 * 1
                                 (Operator::Minus, Operator::Times, Some(Operator::Minus)) => {
-                                    chained.push(Chain::new(Operator::Times, Some(vec![*prev])));
+                                    chained.push(Chain::new(
+                                        Operator::Times,
+                                        Some(vec![*prev]),
+                                        None,
+                                    ));
                                 }
                                 // * Handle 4 * 3 + 2 * 1
                                 (Operator::Times, Operator::Times, Some(Operator::Plus)) => {
-                                    chained.push(Chain::new(Operator::Times, Some(vec![*prev])));
+                                    chained.push(Chain::new(
+                                        Operator::Times,
+                                        Some(vec![*prev]),
+                                        Some(Operator::Plus),
+                                    ));
                                 }
                                 // * Handle 4 + 3 + 2 + 1
                                 (Operator::Plus, Operator::Plus, Some(Operator::Plus)) => {
@@ -286,16 +299,32 @@ fn parse_maths_equation(equation: String) -> i32 {
                         } else {
                             match current {
                                 Operator::Times => {
-                                    chained.push(Chain::new(Operator::Times, Some(vec![*prev])));
+                                    chained.push(Chain::new(
+                                        Operator::Times,
+                                        Some(vec![*prev]),
+                                        None,
+                                    ));
                                 }
                                 Operator::Divisor => {
-                                    chained.push(Chain::new(Operator::Divisor, Some(vec![*prev])));
+                                    chained.push(Chain::new(
+                                        Operator::Divisor,
+                                        Some(vec![*prev]),
+                                        None,
+                                    ));
                                 }
                                 Operator::Plus => {
-                                    chained.push(Chain::new(Operator::Plus, Some(vec![*prev])));
+                                    chained.push(Chain::new(
+                                        Operator::Plus,
+                                        Some(vec![*prev]),
+                                        None,
+                                    ));
                                 }
                                 Operator::Minus => {
-                                    chained.push(Chain::new(Operator::Minus, Some(vec![*prev])));
+                                    chained.push(Chain::new(
+                                        Operator::Minus,
+                                        Some(vec![*prev]),
+                                        None,
+                                    ));
                                 }
                             }
                         }
@@ -312,7 +341,11 @@ fn parse_maths_equation(equation: String) -> i32 {
                                     chained[chained_len - 1].push(*x);
                                 }
                                 _ => {
-                                    chained.push(Chain::new(Operator::from(op), Some(vec![*x])));
+                                    chained.push(Chain::new(
+                                        Operator::from(op),
+                                        Some(vec![*x]),
+                                        None,
+                                    ));
                                 }
                             }
                         }
