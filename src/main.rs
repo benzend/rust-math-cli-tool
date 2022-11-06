@@ -249,16 +249,10 @@ fn parse_maths_equation(equation: String) -> i32 {
                         let chained_len = &chained.len();
                         if chained_len > &0 {
                             match (&chained[chained_len - 1].op, current) {
-                                (Operator::Times, Operator::Times) => {
-                                    chained[chained_len - 1].push(prev_arg);
-                                }
-                                (Operator::Plus, Operator::Plus) => {
-                                    chained[chained_len - 1].push(prev_arg);
-                                }
-                                (Operator::Minus, Operator::Minus) => {
-                                    chained[chained_len - 1].push(prev_arg);
-                                }
-                                (Operator::Divisor, Operator::Divisor) => {
+                                (Operator::Times, Operator::Times)
+                                | (Operator::Plus, Operator::Plus)
+                                | (Operator::Minus, Operator::Minus)
+                                | (Operator::Divisor, Operator::Divisor) => {
                                     chained[chained_len - 1].push(prev_arg);
                                 }
                                 (Operator::Times, op) => match prev_op {
