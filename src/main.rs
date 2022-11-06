@@ -248,35 +248,25 @@ fn parse_maths_equation(equation: String) -> i32 {
                     (MathsArg::Int(prev), MathsArg::Op(current)) => {
                         let chained_len = &chained.len();
                         if chained_len > &0 {
-                            match (&chained[chained_len - 1].op, current) {
-                                (Operator::Times, Operator::Times)
-                                | (Operator::Plus, Operator::Plus)
-                                | (Operator::Minus, Operator::Minus)
-                                | (Operator::Divisor, Operator::Divisor) => {
-                                    chained[chained_len - 1].push(prev_arg);
+                            match (&chained[chained_len - 1].op, current, &prev_op) {
+                                // * Handle 4 * 3 * 2 * 1
+                                (Operator::Times, Operator::Times, Some(Operator::Times)) => {
+                                    chained[chained_len - 1].push(*prev);
                                 }
-                                (Operator::Times, op) => match prev_op {
-                                    Some(Operator::Plus)
-                                    | Some(Operator::Divisor)
-                                    | Some(Operator::Minus) => {
-                                        chained.push(Chain::new(
-                                            Operator::from(op),
-                                            Some(vec![*prev]),
-                                        ));
-                                    }
-                                    _ => {
-                                        chained[chained_len - 1].push(prev_arg);
-                                    }
-                                },
-                                (Operator::Plus, op) => {
-                                    chained.push(Chain::new(Operator::from(op), Some(vec![*prev])));
+                                // * Handle 4 * 3 * 2 + 1
+                                (Operator::Times, Operator::Plus, Some(Operator::Times)) => {
+                                    chained[chained_len - 1].push(*prev);
                                 }
-                                (Operator::Minus, op) => {
-                                    chained.push(Chain::new(Operator::from(op), Some(vec![*prev])));
+                                // * Handle 4 + 3 * 2 * 1
+                                (Operator::Plus, Operator::Times, Some(Operator::Plus)) => {
+                                    chained.push(Chain::new(Operator::Times, Some(vec![*prev])));
                                 }
-                                (Operator::Divisor, op) => {
-                                    chained.push(Chain::new(Operator::from(op), Some(vec![*prev])));
+                                // * Handle 4 * 3 + 2 * 1
+                                (Operator::Times, Operator::Times, Some(Operator::Plus)) => {
+                                    chained.push(Chain::new(Operator::Times, Some(vec![*prev])));
                                 }
+
+                                _ => {}
                             }
                         } else {
                             match current {
