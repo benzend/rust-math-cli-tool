@@ -288,14 +288,16 @@ fn parse_maths_equation(equation: String) -> i32 {
                     (MathsArg::Op(op), MathsArg::Int(x)) => {
                         if validated_index == &validated.len() - 1 {
                             let chained_len = &chained.len();
-                            match prev_op {
-                                Some(Operator::Plus)
-                                | Some(Operator::Divisor)
-                                | Some(Operator::Minus) => {
-                                    chained.push(Chain::new(Operator::from(op), Some(vec![*x])));
+
+                            match (&chained[chained_len - 1].op, op) {
+                                (Operator::Times, Operator::Times)
+                                | (Operator::Plus, Operator::Plus)
+                                | (Operator::Minus, Operator::Minus)
+                                | (Operator::Divisor, Operator::Divisor) => {
+                                    chained[chained_len - 1].push(*x);
                                 }
                                 _ => {
-                                    chained[chained_len - 1].push(*x);
+                                    chained.push(Chain::new(Operator::from(op), Some(vec![*x])));
                                 }
                             }
                         }
