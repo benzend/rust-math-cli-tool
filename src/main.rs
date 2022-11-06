@@ -283,7 +283,6 @@ fn parse_maths_equation(equation: String) -> i32 {
                                 (Operator::Divisor, op) => {
                                     chained.push(Chain::new(Operator::from(op), Some(vec![*prev])));
                                 }
-                                _ => {}
                             }
                         } else {
                             match current {
