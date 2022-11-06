@@ -224,19 +224,13 @@ fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
                     if chained_len > &0 {
                         match (&chained[chained_len - 1].op, current, &prev_op) {
                             // * Handle 4 * 3 * 2 * 1
-                            (Operator::Times, Operator::Times, Some(Operator::Times)) => {
-                                chained[chained_len - 1].push(*prev);
-                            }
+                            (Operator::Times, Operator::Times, Some(Operator::Times))
                             // * Handle 4 * 3 * 2 + 1
-                            (Operator::Times, Operator::Plus, Some(Operator::Times)) => {
-                                chained[chained_len - 1].push(*prev);
-                            }
+                            | (Operator::Times, Operator::Plus, Some(Operator::Times)) 
                             // * Handle 4 * 3 * 2 - 1
-                            (Operator::Times, Operator::Minus, Some(Operator::Times)) => {
-                                chained[chained_len - 1].push(*prev);
-                            }
+                            | (Operator::Times, Operator::Minus, Some(Operator::Times))
                             // * Handle 4 * 3 * 2 / 1
-                            (Operator::Times, Operator::Divisor, Some(Operator::Times)) => {
+                            | (Operator::Times, Operator::Divisor, Some(Operator::Times)) => {
                                 chained[chained_len - 1].push(*prev);
                             }
                             // * Handle 4 + 3 * 2 * 1
@@ -249,11 +243,19 @@ fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
                             }
                             // * Handle 4 - 3 * 2 * 1
                             (Operator::Minus, Operator::Times, Some(Operator::Minus)) => {
-                                chained.push(Chain::new(Operator::Times, Some(vec![*prev]), None));
+                                chained.push(Chain::new(
+                                    Operator::Times,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Minus),
+                                ));
                             }
                             // * Handle 4 / 3 * 2 * 1
                             (Operator::Divisor, Operator::Times, Some(Operator::Divisor)) => {
-                                chained.push(Chain::new(Operator::Times, Some(vec![*prev]), None));
+                                chained.push(Chain::new(
+                                    Operator::Times,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Divisor),
+                                ));
                             }
                             // * Handle 4 * 3 + 2 * 1
                             (Operator::Times, Operator::Times, Some(Operator::Plus)) => {
