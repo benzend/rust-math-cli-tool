@@ -265,6 +265,10 @@ fn parse_maths_equation(equation: String) -> i32 {
                                 (Operator::Times, Operator::Times, Some(Operator::Plus)) => {
                                     chained.push(Chain::new(Operator::Times, Some(vec![*prev])));
                                 }
+                                // * Handle 4 + 3 + 2 + 1
+                                (Operator::Plus, Operator::Plus, Some(Operator::Plus)) => {
+                                    chained[chained_len - 1].push(*prev);
+                                }
 
                                 _ => {}
                             }
