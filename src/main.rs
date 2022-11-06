@@ -241,7 +241,11 @@ fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
                             }
                             // * Handle 4 + 3 * 2 * 1
                             (Operator::Plus, Operator::Times, Some(Operator::Plus)) => {
-                                chained.push(Chain::new(Operator::Times, Some(vec![*prev]), None));
+                                chained.push(Chain::new(
+                                    Operator::Times,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Plus),
+                                ));
                             }
                             // * Handle 4 - 3 * 2 * 1
                             (Operator::Minus, Operator::Times, Some(Operator::Minus)) => {
@@ -322,7 +326,11 @@ fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
                                 chained[chained_len - 1].push(*x);
                             }
                             _ => {
-                                chained.push(Chain::new(Operator::from(op), Some(vec![*x]), None));
+                                chained.push(Chain::new(
+                                    Operator::from(op),
+                                    Some(vec![*x]),
+                                    Some(Operator::from(op)),
+                                ));
                             }
                         }
                     }
