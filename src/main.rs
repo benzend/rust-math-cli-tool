@@ -230,9 +230,16 @@ fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
                             // * Handle 4 * 3 * 2 - 1
                             | (Operator::Times, Operator::Minus, Some(Operator::Times))
                             // * Handle 4 * 3 * 2 / 1
-                            | (Operator::Times, Operator::Divisor, Some(Operator::Times)) => {
+                            | (Operator::Times, Operator::Divisor, Some(Operator::Times))
+                            // * Handle 4 + 3 + 2 + 1
+                            | (Operator::Plus, Operator::Plus, Some(Operator::Plus))
+                            // * Handle 4 - 3 - 2 - 1
+                            | (Operator::Minus, Operator::Minus, Some(Operator::Minus))
+                            // * Handle 4 / 3 / 2 / 1
+                            | (Operator::Divisor, Operator::Divisor, Some(Operator::Divisor)) => {
                                 chained[chained_len - 1].push(*prev);
                             }
+                            
                             // * Handle 4 + 3 * 2 * 1
                             (Operator::Plus, Operator::Times, Some(Operator::Plus)) 
                             // * Handle 4 * 3 + 2 * 1
@@ -264,14 +271,7 @@ fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
                                 ));
                             }
                             
-                            // * Handle 4 + 3 + 2 + 1
-                            (Operator::Plus, Operator::Plus, Some(Operator::Plus))
-                            // * Handle 4 - 3 - 2 - 1
-                            | (Operator::Minus, Operator::Minus, Some(Operator::Minus))
-                            // * Handle 4 / 3 / 2 / 1
-                            | (Operator::Divisor, Operator::Divisor, Some(Operator::Divisor)) => {
-                                chained[chained_len - 1].push(*prev);
-                            }
+                            
                             _ => {}
                         }
                     } else {
