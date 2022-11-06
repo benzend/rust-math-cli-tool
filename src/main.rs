@@ -257,8 +257,16 @@ fn parse_maths_equation(equation: String) -> i32 {
                                 (Operator::Times, Operator::Plus, Some(Operator::Times)) => {
                                     chained[chained_len - 1].push(*prev);
                                 }
+                                // * Handle 4 * 3 * 2 - 1
+                                (Operator::Times, Operator::Minus, Some(Operator::Times)) => {
+                                    chained[chained_len - 1].push(*prev);
+                                }
                                 // * Handle 4 + 3 * 2 * 1
                                 (Operator::Plus, Operator::Times, Some(Operator::Plus)) => {
+                                    chained.push(Chain::new(Operator::Times, Some(vec![*prev])));
+                                }
+                                // * Handle 4 - 3 * 2 * 1
+                                (Operator::Minus, Operator::Times, Some(Operator::Minus)) => {
                                     chained.push(Chain::new(Operator::Times, Some(vec![*prev])));
                                 }
                                 // * Handle 4 * 3 + 2 * 1
@@ -269,7 +277,10 @@ fn parse_maths_equation(equation: String) -> i32 {
                                 (Operator::Plus, Operator::Plus, Some(Operator::Plus)) => {
                                     chained[chained_len - 1].push(*prev);
                                 }
-
+                                // * Handle 4 - 3 - 2 - 1
+                                (Operator::Minus, Operator::Minus, Some(Operator::Minus)) => {
+                                    chained[chained_len - 1].push(*prev);
+                                }
                                 _ => {}
                             }
                         } else {
