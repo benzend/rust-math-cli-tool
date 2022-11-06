@@ -397,8 +397,18 @@ fn parse_maths_equation(equation: String) -> i32 {
     } else {
         let chained = chainify(&validated);
 
-        let mut calculated_chains: Vec<Chain> = Vec::new();
-        for chain in chained.iter() {}
+        let mut calculated_args: Vec<MathsArg> = Vec::new();
+        for chain in chained.iter() {
+            let calculated = chain.calculate();
+
+            if let Some(pre_op) = &chain.prepend {
+                calculated_args.push(MathsArg::Op(Operator::from(pre_op)));
+            }
+
+            calculated_args.push(MathsArg::Int(calculated));
+        }
+
+        println!("{:?}", calculated_args);
         1
     };
 
