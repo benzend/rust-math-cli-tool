@@ -269,6 +269,26 @@ fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
                                     Some(Operator::Plus),
                                 ));
                             }
+                            // * Handle 4 - 3 + 2 - 1
+                            (Operator::Minus, Operator::Plus, Some(Operator::Minus)) => {
+                                chained[chained_len - 1].push(*prev);
+                            }
+                            (Operator::Minus, Operator::Minus, Some(Operator::Plus)) => {
+                                chained.push(Chain::new(
+                                    Operator::Minus,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Plus)
+                                ));
+                            }
+                            // * Handle 4 + 3 - 2 + 1
+                            (Operator::Plus, Operator::Minus, Some(Operator::Plus)) => {
+                                chained.push(Chain::new(
+                                    Operator::Minus,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Plus)
+                                ))
+                            }
+
                             // * Handle 4 - 3 * 2 * 1
                             (Operator::Minus, Operator::Times, Some(Operator::Minus))
                             // * Handle 4 * 3 - 2 * 1
@@ -349,7 +369,6 @@ fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
         arg_1 = Some(&arg);
     }
 
-    println!("chained {:?}", chained);
     chained
 }
 
@@ -525,6 +544,42 @@ mod tests {
                     input: "4 * 3 * 2 + 1",
                     output: vec![
                         Chain::new(Operator::Times, Some(vec![4,3,2]), None),
+                        Chain::new(Operator::Plus, Some(vec![1]), Some(Operator::Plus))
+                    ]
+                },
+                Expectation {
+                    input: "4 - 3 - 2 - 1",
+                    output: vec![
+                        Chain::new(Operator::Minus, Some(vec![4, 3, 2, 1]), None)
+                    ]
+                },
+                Expectation {
+                    input: "4 - 3 + 2 - 1",
+                    output: vec![
+                        Chain::new(Operator::Minus, Some(vec![4, 3]), None),
+                        Chain::new(Operator::Minus, Some(vec![2, 1]), Some(Operator::Plus))
+                    ]
+
+                },
+                Expectation {
+                    input: "4 + 3 - 2 + 1",
+                    output: vec![
+                        Chain::new(Operator::Plus, Some(vec![4]), None),
+                        Chain::new(Operator::Minus, Some(vec![3, 2]), Some(Operator::Plus)),
+                        Chain::new(Operator::Plus, Some(vec![1]), Some(Operator::Plus))
+                    ]
+                },
+                Expectation {
+                    input: "4 + 3 - 2 - 1",
+                    output: vec![
+                        Chain::new(Operator::Plus, Some(vec![4]), None),
+                        Chain::new(Operator::Minus, Some(vec![3, 2, 1]), Some(Operator::Plus))
+                    ]
+                },
+                Expectation {
+                    input: "4 - 3 - 2 + 1",
+                    output: vec![
+                        Chain::new(Operator::Minus, Some(vec![4,3,2]), None),
                         Chain::new(Operator::Plus, Some(vec![1]), Some(Operator::Plus))
                     ]
                 }
