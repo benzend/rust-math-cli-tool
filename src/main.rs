@@ -75,7 +75,25 @@ enum MathsArg {
     Int(i32),
 }
 
-#[derive(Debug)]
+impl From<&str> for MathsArg {
+    fn from(s: &str) -> Self {
+        match s {
+            "+" => MathsArg::Op(Operator::Plus),
+            "-" => MathsArg::Op(Operator::Minus),
+            "*" => MathsArg::Op(Operator::Times),
+            "/" => MathsArg::Op(Operator::Divisor),
+            s => {
+                match s.parse::<i32>() {
+                    Ok(n) => MathsArg::Int(n),
+                    Err(_) => panic!("not a valid str")
+                }
+            },
+        }
+    }
+}
+
+
+#[derive(Debug, PartialEq)]
 struct Chain {
     op: Operator,
     nums: Vec<i32>,
@@ -210,6 +228,7 @@ fn validate_maths_vector(vector: Vec<MathsArg>) -> Vec<MathsArg> {
 
     validated
 }
+
 
 fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
     let mut chained: Vec<Chain> = Vec::new();
@@ -406,7 +425,6 @@ fn parse_maths_equation(equation: String) -> i32 {
 
 mod tests {
     mod maths {
-
         #[test]
         fn handles_any_operator_with_two_args() {
             use crate::parse_maths_equation;
@@ -461,6 +479,63 @@ mod tests {
             tests.into_iter().for_each(|t| {
                 assert_eq!(parse_maths_equation(t.input), t.output);
             })
+        }
+
+        #[test]
+        fn correctly_converts_chain() {
+            use crate::chainify;
+
+            use crate::{Chain, Operator, parse_maths_vector};
+            struct Expectation {
+                input: &'static str,
+                output: Vec<Chain>
+            }
+
+            let tests = vec![
+                Expectation {
+                    input: "4 * 3 * 2 * 1",
+                    output: vec![
+                        Chain::new(Operator::Times, Some(vec![4, 3, 2, 1]), None)
+                    ]
+                },
+                Expectation {
+                    input: "4 * 3 + 2 * 1",
+                    output: vec![
+                        Chain::new(Operator::Times, Some(vec![4, 3]), None),
+                        Chain::new(Operator::Times, Some(vec![2, 1]), Some(Operator::Plus))
+                    ]
+
+                },
+                Expectation {
+                    input: "4 + 3 * 2 + 1",
+                    output: vec![
+                        Chain::new(Operator::Plus, Some(vec![4]), None),
+                        Chain::new(Operator::Times, Some(vec![3, 2]), Some(Operator::Plus)),
+                        Chain::new(Operator::Plus, Some(vec![1]), Some(Operator::Plus))
+                    ]
+                },
+                Expectation {
+                    input: "4 + 3 * 2 * 1",
+                    output: vec![
+                        Chain::new(Operator::Plus, Some(vec![4]), None),
+                        Chain::new(Operator::Times, Some(vec![3, 2, 1]), Some(Operator::Plus))
+                    ]
+                },
+                Expectation {
+                    input: "4 * 3 * 2 + 1",
+                    output: vec![
+                        Chain::new(Operator::Times, Some(vec![4,3,2]), None),
+                        Chain::new(Operator::Plus, Some(vec![1]), Some(Operator::Plus))
+                    ]
+                }
+            ];
+
+            tests.iter().for_each(|t| {
+                assert_eq!(
+                    chainify(
+                        &parse_maths_vector(t.input.to_string().split(" ").collect::<Vec<&str>>())
+                    ), t.output)
+            });
         }
     }
 }
