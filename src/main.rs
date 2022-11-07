@@ -269,24 +269,12 @@ fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
                                     Some(Operator::Plus),
                                 ));
                             }
-                            // * Handle 4 - 3 + 2 - 1
-                            (Operator::Minus, Operator::Plus, Some(Operator::Minus)) => {
-                                chained[chained_len - 1].push(*prev);
-                            }
                             (Operator::Minus, Operator::Minus, Some(Operator::Plus)) => {
                                 chained.push(Chain::new(
                                     Operator::Minus,
                                     Some(vec![*prev]),
                                     Some(Operator::Plus)
                                 ));
-                            }
-                            // * Handle 4 + 3 - 2 + 1
-                            (Operator::Plus, Operator::Minus, Some(Operator::Plus)) => {
-                                chained.push(Chain::new(
-                                    Operator::Minus,
-                                    Some(vec![*prev]),
-                                    Some(Operator::Plus)
-                                ))
                             }
 
                             // * Handle 4 - 3 * 2 * 1
@@ -309,8 +297,72 @@ fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
                                     Some(Operator::Divisor),
                                 ));
                             }
-                            
-                            
+
+                            // * Handle 4 - 3 + 2 + 1
+                            (Operator::Minus, Operator::Plus, Some(Operator::Minus)) => {
+                                chained.push(Chain::new(
+                                    Operator::Plus,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Minus)
+                                ));
+                            }
+
+                            // * Handle 4 + 3 / 2 + 1
+                            (Operator::Plus, Operator::Divisor, Some(Operator::Plus)) => {
+                                chained.push(
+                                    Chain::new(
+                                        Operator::Divisor,
+                                        Some(vec![*prev]),
+                                        Some(Operator::Plus)
+                                    )
+                                );
+                            }
+                            (Operator::Divisor, Operator::Plus, Some(Operator::Divisor)) => {
+                                chained[chained_len - 1].push(*prev);
+                            }
+
+                            // * Handle 4 / 3 + 2 / 1
+                            (Operator::Divisor, Operator::Divisor, Some(Operator::Plus)) => {
+                                chained.push(Chain::new(
+                                    Operator::Divisor,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Plus)
+                                ));
+                            }
+
+                            // * Handle 4 / 3 + 2 + 1
+                            (Operator::Divisor, Operator::Plus, Some(Operator::Plus)) => {
+                                chained.push(Chain::new(
+                                    Operator::Plus,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Plus)
+                                ));
+                            }  
+
+
+                            // * Handle 4 + 3 + 2 - 1
+                            (Operator::Plus, Operator::Minus, Some(Operator::Plus)) => {
+                                chained[chained_len - 1].push(*prev);
+                            }
+
+                            // * Handle 4 + 3 - 2 + 1
+                            (Operator::Plus, Operator::Plus, Some(Operator::Minus)) => {
+                                chained.push(Chain::new(
+                                    Operator::Minus,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Minus)
+                                ));
+                            }
+
+                            // * Handle 4 + 3 - 2 - 1
+                            (Operator::Plus, Operator::Minus, Some(Operator::Minus)) => {
+                                chained.push(Chain::new(
+                                    Operator::Minus,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Minus)
+                                ));
+                            }
+
                             _ => {}
                         }
                     } else {
@@ -626,22 +678,6 @@ mod tests {
 
                 // * (+ -)
                 Expectation {
-                    input: "4 + 3 - 2 + 1",
-                    output: vec![
-                        Chain::new(Operator::Plus, Some(vec![4, 3]), None),
-                        Chain::new(Operator::Plus, Some(vec![2, 1]), Some(Operator::Minus))
-                    ]
-
-                },
-                Expectation {
-                    input: "4 - 3 + 2 - 1",
-                    output: vec![
-                        Chain::new(Operator::Minus, Some(vec![4]), None),
-                        Chain::new(Operator::Plus, Some(vec![3, 2]), Some(Operator::Minus)),
-                        Chain::new(Operator::Minus, Some(vec![1]), Some(Operator::Minus))
-                    ]
-                },
-                Expectation {
                     input: "4 - 3 + 2 + 1",
                     output: vec![
                         Chain::new(Operator::Minus, Some(vec![4]), None),
@@ -697,31 +733,32 @@ mod tests {
                 Expectation {
                     input: "4 - 3 + 2 - 1",
                     output: vec![
-                        Chain::new(Operator::Minus, Some(vec![4, 3]), None),
-                        Chain::new(Operator::Minus, Some(vec![2, 1]), Some(Operator::Plus))
+                        Chain::new(Operator::Minus, Some(vec![4]), None),
+                        Chain::new(Operator::Plus, Some(vec![3, 2]), Some(Operator::Minus)),
+                        Chain::new(Operator::Minus, Some(vec![1]), Some(Operator::Minus))
                     ]
 
                 },
                 Expectation {
                     input: "4 + 3 - 2 + 1",
                     output: vec![
-                        Chain::new(Operator::Plus, Some(vec![4]), None),
-                        Chain::new(Operator::Minus, Some(vec![3, 2]), Some(Operator::Plus)),
+                        Chain::new(Operator::Plus, Some(vec![4, 3]), None),
+                        Chain::new(Operator::Minus, Some(vec![2]), Some(Operator::Minus)),
                         Chain::new(Operator::Plus, Some(vec![1]), Some(Operator::Plus))
                     ]
                 },
                 Expectation {
                     input: "4 + 3 - 2 - 1",
                     output: vec![
-                        Chain::new(Operator::Plus, Some(vec![4]), None),
-                        Chain::new(Operator::Minus, Some(vec![3, 2, 1]), Some(Operator::Plus))
+                        Chain::new(Operator::Plus, Some(vec![4, 3]), None),
+                        Chain::new(Operator::Minus, Some(vec![2, 1]), Some(Operator::Minus))
                     ]
                 },
                 Expectation {
                     input: "4 - 3 - 2 + 1",
                     output: vec![
-                        Chain::new(Operator::Minus, Some(vec![4,3,2]), None),
-                        Chain::new(Operator::Plus, Some(vec![1]), Some(Operator::Plus))
+                        Chain::new(Operator::Minus, Some(vec![4, 3]), None),
+                        Chain::new(Operator::Plus, Some(vec![2, 1]), Some(Operator::Minus))
                     ]
                 }
             ];
