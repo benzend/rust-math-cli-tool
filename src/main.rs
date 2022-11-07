@@ -92,7 +92,6 @@ impl From<&str> for MathsArg {
     }
 }
 
-
 #[derive(Debug, PartialEq)]
 struct Chain {
     op: Operator,
@@ -129,6 +128,24 @@ impl Chain {
                 )
             }
         }
+    }
+
+    fn into_maths_args(&self) -> Vec<MathsArg> {
+        let mut maths_arg_array: Vec<MathsArg> = Vec::new();
+        for (i, n) in self.nums.iter().enumerate() {
+            if i == 0 {
+                maths_arg_array.push(MathsArg::Int(*n));
+            } else {
+                match self.op {
+                    Operator::Times => maths_arg_array.push(MathsArg::Op(Operator::Times)),
+                    Operator::Plus => maths_arg_array.push(MathsArg::Op(Operator::Plus)),
+                    Operator::Minus => maths_arg_array.push(MathsArg::Op(Operator::Minus)),
+                    Operator::Divisor => maths_arg_array.push(MathsArg::Op(Operator::Divisor))
+                };
+                maths_arg_array.push(MathsArg::Int(*n));
+            }
+        }
+        maths_arg_array
     }
 }
 
@@ -477,14 +494,39 @@ fn parse_maths_equation(equation: String) -> i32 {
         let chained = chainify(&validated);
 
         let mut calculated_args: Vec<MathsArg> = Vec::new();
-        for chain in chained.iter() {
-            let calculated = chain.calculate();
+        for chain in chained {
+            let args: Vec<MathsArg> = match chain.op {
+                Operator::Times | Operator::Divisor => {
+                    let mut args: Vec<MathsArg> = Vec::new();
+                    let calculated = chain.calculate();
 
-            if let Some(pre_op) = &chain.prepend {
-                calculated_args.push(MathsArg::Op(Operator::from(pre_op)));
-            }
+                    if let Some(pre_op) = &chain.prepend {
+                        args.push(MathsArg::Op(Operator::from(pre_op)));
+                    }
 
-            calculated_args.push(MathsArg::Int(calculated));
+                    args.push(MathsArg::Int(calculated));
+
+                    args
+                }
+                Operator::Plus | Operator::Minus => {
+                    let mut args: Vec<MathsArg> = Vec::new();
+
+                    let num_args: &mut Vec<MathsArg> = &mut chain.into_maths_args();
+                    
+                    if let Some(pre_op) = &chain.prepend {
+                        args.push(MathsArg::Op(Operator::from(pre_op)));
+                    }
+
+                    args.append(num_args);
+
+                    args
+                }
+            };
+
+            for arg in args {
+                calculated_args.push(arg);
+            };
+
         }
 
         println!("{:?}", calculated_args);
