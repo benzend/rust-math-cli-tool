@@ -20,7 +20,7 @@ Make sure you have [Rust](https://www.rust-lang.org/tools/install) installed
 
 Clone the project
 
-git clone https://github.com/benzend/rust-math-cli-tool
+git clone https://github.com/benzend/rust-math-cli-tool.git
 
 Feel free to make any PRs to this project, whether it be enhancements in readability or performance, fixes, or new features entirely.
 
