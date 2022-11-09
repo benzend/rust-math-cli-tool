@@ -340,6 +340,14 @@ mod tests {
                     input: "2 + 8 - 4 * 3 / 2".to_string(),
                     output: 4,
                 },
+                MathsExpectation {
+                    input: "10 / 2 * 2".to_string(),
+                    output: 10,
+                },
+                MathsExpectation {
+                    input: "15 * 3 - 2 * 20 + 10 / 2 - 5".to_string(),
+                    output: 5,
+                },
             ];
 
             tests.into_iter().for_each(|t| {
