@@ -218,9 +218,12 @@ fn parse_maths_equation(equation: String) -> i32 {
             _ => panic!("Not a valid string!"),
         }
     } else {
-        while validated.contains(&MathsArg::Op(Operator::Times)) {
+        while validated.contains(&MathsArg::Op(Operator::Times))
+            || validated.contains(&MathsArg::Op(Operator::Divisor))
+        {
             let idx = validated.iter().position(|arg| match arg {
                 MathsArg::Op(Operator::Times) => true,
+                MathsArg::Op(Operator::Divisor) => true,
                 _ => false,
             });
 
@@ -234,7 +237,13 @@ fn parse_maths_equation(equation: String) -> i32 {
                 _ => panic!("should be integers"),
             };
 
-            validated[idx + 1] = MathsArg::Int(x * y);
+            let res: i32 = match &validated[idx] {
+                MathsArg::Op(Operator::Times) => x * y,
+                MathsArg::Op(Operator::Divisor) => x / y,
+                _ => panic!("shouldn't be anything other than multiplication or division"),
+            };
+
+            validated[idx + 1] = MathsArg::Int(res);
             validated.remove(idx);
             validated.remove(idx - 1);
         }
