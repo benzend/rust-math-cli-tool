@@ -248,8 +248,40 @@ fn parse_maths_equation(equation: String) -> i32 {
             validated.remove(idx - 1);
         }
 
-        println!("{:?}", validated);
-        1
+        while validated.contains(&MathsArg::Op(Operator::Plus))
+            || validated.contains(&MathsArg::Op(Operator::Minus))
+        {
+            let idx = validated.iter().position(|arg| match arg {
+                MathsArg::Op(Operator::Plus) => true,
+                MathsArg::Op(Operator::Minus) => true,
+                _ => false,
+            });
+
+            let idx = idx.expect("Expecting an item");
+
+            let x = &validated[idx - 1];
+            let y = &validated[idx + 1];
+
+            let (x, y) = match (x, y) {
+                (MathsArg::Int(x), MathsArg::Int(y)) => (*x, *y),
+                _ => panic!("should be integers"),
+            };
+
+            let res: i32 = match &validated[idx] {
+                MathsArg::Op(Operator::Plus) => x + y,
+                MathsArg::Op(Operator::Minus) => x - y,
+                _ => panic!("shouldn't be anything other than addition or subtraction"),
+            };
+
+            validated[idx + 1] = MathsArg::Int(res);
+            validated.remove(idx);
+            validated.remove(idx - 1);
+        }
+
+        match validated[0] {
+            MathsArg::Int(res) => res,
+            _ => panic!("should result in an integer"),
+        }
     };
 
     result
