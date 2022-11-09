@@ -380,6 +380,27 @@ fn chainify(vector: &Vec<MathsArg>) -> Vec<Chain> {
                                 ));
                             }
 
+                            // * Handle 4 / 3 - 2 / 1
+                            (Operator::Divisor, Operator::Minus, Some(Operator::Divisor)) => {
+                                chained[chained_len - 1].push(*prev);
+                            }
+                            (Operator::Divisor, Operator::Divisor, Some(Operator::Minus)) => {
+                                chained.push(Chain::new(
+                                    Operator::Divisor,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Minus)
+                                ));
+                            }
+                            
+                            // * Handle 4 - 3 / 2 - 1
+                            (Operator::Minus, Operator::Divisor, Some(Operator::Minus)) => {
+                                chained.push(Chain::new(
+                                    Operator::Divisor,
+                                    Some(vec![*prev]),
+                                    Some(Operator::Minus)
+                                ));
+                            }
+
                             _ => {}
                         }
                     } else {
@@ -710,6 +731,109 @@ mod tests {
                     ]
                 },
 
+                // * (/ /)
+                Expectation {
+                    input: "4 / 3 / 2 / 1",
+                    output: vec![
+                        Chain::new(Operator::Divisor, Some(vec![4, 3, 2, 1]), None)
+                    ]
+                },
+
+                // * (/ +)
+                Expectation {
+                    input: "4 / 3 + 2 / 1",
+                    output: vec![
+                        Chain::new(Operator::Divisor, Some(vec![4, 3]), None),
+                        Chain::new(Operator::Divisor, Some(vec![2, 1]), Some(Operator::Plus))
+                    ]
+
+                },
+                Expectation {
+                    input: "4 + 3 / 2 + 1",
+                    output: vec![
+                        Chain::new(Operator::Plus, Some(vec![4]), None),
+                        Chain::new(Operator::Divisor, Some(vec![3, 2]), Some(Operator::Plus)),
+                        Chain::new(Operator::Plus, Some(vec![1]), Some(Operator::Plus))
+                    ]
+                },
+                Expectation {
+                    input: "4 + 3 / 2 / 1",
+                    output: vec![
+                        Chain::new(Operator::Plus, Some(vec![4]), None),
+                        Chain::new(Operator::Divisor, Some(vec![3, 2, 1]), Some(Operator::Plus))
+                    ]
+                },
+                Expectation {
+                    input: "4 / 3 / 2 + 1",
+                    output: vec![
+                        Chain::new(Operator::Divisor, Some(vec![4,3,2]), None),
+                        Chain::new(Operator::Plus, Some(vec![1]), Some(Operator::Plus))
+                    ]
+                },
+
+                // * (/ -)
+                Expectation {
+                    input: "4 / 3 - 2 / 1",
+                    output: vec![
+                        Chain::new(Operator::Divisor, Some(vec![4, 3]), None),
+                        Chain::new(Operator::Divisor, Some(vec![2, 1]), Some(Operator::Minus))
+                    ]
+
+                },
+                Expectation {
+                    input: "4 - 3 / 2 - 1",
+                    output: vec![
+                        Chain::new(Operator::Minus, Some(vec![4]), None),
+                        Chain::new(Operator::Divisor, Some(vec![3, 2]), Some(Operator::Minus)),
+                        Chain::new(Operator::Minus, Some(vec![1]), Some(Operator::Minus))
+                    ]
+                },
+                Expectation {
+                    input: "4 - 3 / 2 / 1",
+                    output: vec![
+                        Chain::new(Operator::Minus, Some(vec![4]), None),
+                        Chain::new(Operator::Divisor, Some(vec![3, 2, 1]), Some(Operator::Minus))
+                    ]
+                },
+                Expectation {
+                    input: "4 / 3 / 2 - 1",
+                    output: vec![
+                        Chain::new(Operator::Divisor, Some(vec![4,3,2]), None),
+                        Chain::new(Operator::Minus, Some(vec![1]), Some(Operator::Minus))
+                    ]
+                },
+
+                // * (/ *)
+                Expectation {
+                    input: "4 / 3 * 2 / 1",
+                    output: vec![
+                        Chain::new(Operator::Times, Some(vec![4, 3]), None),
+                        Chain::new(Operator::Times, Some(vec![2, 1]), Some(Operator::Divisor))
+                    ]
+
+                },
+                Expectation {
+                    input: "4 / 3 * 2 / 1",
+                    output: vec![
+                        Chain::new(Operator::Divisor, Some(vec![4]), None),
+                        Chain::new(Operator::Times, Some(vec![3, 2]), Some(Operator::Divisor)),
+                        Chain::new(Operator::Divisor, Some(vec![1]), Some(Operator::Divisor))
+                    ]
+                },
+                Expectation {
+                    input: "4 / 3 * 2 * 1",
+                    output: vec![
+                        Chain::new(Operator::Divisor, Some(vec![4]), None),
+                        Chain::new(Operator::Times, Some(vec![3, 2, 1]), Some(Operator::Divisor))
+                    ]
+                },
+                Expectation {
+                    input: "4 * 3 * 2 / 1",
+                    output: vec![
+                        Chain::new(Operator::Times, Some(vec![4,3,2]), None),
+                        Chain::new(Operator::Divisor, Some(vec![1]), Some(Operator::Divisor))
+                    ]
+                },
                 // * (+ +)
                 Expectation {
                     input: "4 + 3 + 2 + 1",
