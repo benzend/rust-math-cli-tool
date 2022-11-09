@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 use clap::{Parser, Subcommand};
 
 /// A mathmatical cli
@@ -169,7 +171,7 @@ fn validate_maths_vector(vector: Vec<MathsArg>) -> Vec<MathsArg> {
 fn parse_maths_equation(equation: String) -> i32 {
     let split = equation.split(" ").collect::<Vec<&str>>();
 
-    let validated = validate_maths_vector(parse_maths_vector(split));
+    let mut validated = validate_maths_vector(parse_maths_vector(split));
 
     let result = if validated.len() == 3 {
         match (&validated[0], &validated[1], &validated[2]) {
@@ -216,6 +218,28 @@ fn parse_maths_equation(equation: String) -> i32 {
             _ => panic!("Not a valid string!"),
         }
     } else {
+        while validated.contains(&MathsArg::Op(Operator::Times)) {
+            let idx = validated.iter().position(|arg| match arg {
+                MathsArg::Op(Operator::Times) => true,
+                _ => false,
+            });
+
+            let idx = idx.expect("Expecting an item");
+
+            let x = &validated[idx - 1];
+            let y = &validated[idx + 1];
+
+            let (x, y) = match (x, y) {
+                (MathsArg::Int(x), MathsArg::Int(y)) => (*x, *y),
+                _ => panic!("should be integers"),
+            };
+
+            validated[idx + 1] = MathsArg::Int(x * y);
+            validated.remove(idx);
+            validated.remove(idx - 1);
+        }
+
+        println!("{:?}", validated);
         1
     };
 
