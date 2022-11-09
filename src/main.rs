@@ -1,5 +1,3 @@
-use std::ops::Index;
-
 use clap::{Parser, Subcommand};
 
 /// A mathmatical cli
