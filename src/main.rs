@@ -123,6 +123,7 @@ fn main() {
 }
 
 fn parse_maths_vector(vector: Vec<&str>) -> Vec<MathsArg> {
+    // TODO: Use the MathsArg::from() method
     vector
         .into_iter()
         .map(|item| match item {
